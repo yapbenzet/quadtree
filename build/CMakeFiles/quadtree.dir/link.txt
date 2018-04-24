@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/quadtree.dir/main.cpp.o  -o quadtree 
