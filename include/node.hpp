@@ -80,11 +80,11 @@ int Node<scalar,BUCKET_SIZE>::get_section(Point<scalar> point)
 template<typename scalar, int BUCKET_SIZE>
 bool Node<scalar,BUCKET_SIZE>::split(Point<scalar> point)
 {
+	this->state = status::parent;
 	for(auto it = points->begin(); it != points->end(); it++)
 	{
 		this->insert(*it);
 	}
-	this->state = status::parent;
 	delete points;
 }
 
