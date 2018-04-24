@@ -1,3 +1,0 @@
-/home/alperen/github/quadtree/build/CMakeFiles/rebuild_cache.dir
-/home/alperen/github/quadtree/build/CMakeFiles/quadtree.dir
-/home/alperen/github/quadtree/build/CMakeFiles/edit_cache.dir
