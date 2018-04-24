@@ -1,49 +1,66 @@
 #ifndef quad_tree_h
 #define quad_tree_h
 
+#include <iostream>
 #include "point.hpp"
 #include "region.hpp"
 #include "node.hpp"
 
-template<typename scalar, int BUCKET_SIZE>
+template<typename scalar>
 class quad_tree
 {
-	Node<scalar,BUCKET_SIZE>* root;
-
+	Node<scalar>* root;
 public:
-	quad_tree(const Region<scalar>& region);
+	quad_tree(const Region<scalar>& region, int bucketsize);
 
-	bool insert(Point<scalar> point);
+	bool insert(Point<scalar>& point);
 
+
+	friend std::ostream& operator<<(std::ostream& out, quad_tree<scalar>& rhs)
+	{
+		out << *rhs.root;
+
+		for (int i = 0; i < 4; i++)
+			if (rhs.root->child[i] != nullptr)
+				out << rhs.root->child[i];
+		return out;
+
+	}
 };
 
-template<typename scalar, int BUCKET_SIZE>
-quad_tree<scalar,BUCKET_SIZE>::quad_tree(const Region<scalar>& region)
+template<typename scalar>
+quad_tree<scalar>::quad_tree(const Region<scalar>& region, int bucketsize)
 {
-	this->root = new Node<scalar, BUCKET_SIZE>;
+	this->root = new Node<scalar>(0);
 	this->root->region = region;
+	Node<scalar>::bucket_size = bucketsize;
 }
 
-template<typename scalar, int BUCKET_SIZE>
-bool quad_tree<scalar,BUCKET_SIZE>::insert(Point<scalar> point)
+template<typename scalar>
+bool quad_tree<scalar>::insert(Point<scalar>& point)
 {
-
 	if(root->state == status::leaf)
 	{
-		if(root->point_count == BUCKET_SIZE)
+		if(root->point_count == Node<scalar>::bucket_size)
 		{
-			root->split(point);
+			return root->split(point);
 		}		
 		else
 		{
-			root->points[root->point_count++] = point;
+			 root->points.push_back(point);
+			 root->point_count++;
+			 return true;
 		}
 	}
 	else
 	{
-		if(int sect = root->get_section(point); root->child[sect] == nullptr)
-			root->child[sect] = new Node<scalar,BUCKET_SIZE>;
-		root->insert(point);
+		
+		if (int sect = root->get_section(point); root->child[sect] == nullptr) 
+		{
+			root->child[sect] = new Node<scalar>(root->depth + 1);
+			root->child[sect]->set_region(root->region, sect);
+		}
+		return root->insert(point);
 	}		
 }
 

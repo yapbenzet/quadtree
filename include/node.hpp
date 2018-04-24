@@ -1,11 +1,12 @@
 #ifndef QUAD_TREE_NODE
 #define QUAD_TREE_NODE
 
-#include <array>
+#include <vector>
+#include <iostream>
 #include "point.hpp"
 #include "region.hpp"
 
-template<typename scalar, int BUCKET_SIZE>
+template<typename scalar>
 class quad_tree;
 
 enum class status : bool
@@ -14,78 +15,128 @@ enum class status : bool
 	leaf
 };
 
-template<typename scalar, int BUCKET_SIZE>
+template<typename scalar>
 class Node
 {
 public:
 
-	Node<scalar, BUCKET_SIZE>* child[4];
+	Node<scalar>* child[4];
 	Region<scalar> region;
-	std::array<Point<scalar>, BUCKET_SIZE>* points;
+	std::vector<Point<scalar>> points;
     status state;
 	int point_count;
-
-	Node();
-	friend class quad_tree<scalar,BUCKET_SIZE>;
-
+	int depth;
+	static int bucket_size;
+	Node(int depth);
+	friend class quad_tree<scalar>;
 private:
-	bool insert(Point<scalar> point);
-	bool split(Point<scalar> point);
-	int get_section(Point<scalar> point);
+	bool insert(const Point<scalar>& point);
+	bool split(const Point<scalar>& point);
+	int get_section(const Point<scalar>& point);
+	void set_region(const Region<scalar>& parent_reg, int sect);
+public:
+	friend std::ostream& operator<<(std::ostream& out, const Node<scalar>& rhs)
+	{
+		for (int i = 0; i < rhs.depth; i++)
+			out << "  ";
 
+		out << rhs.region << "    point count:" << rhs.point_count << "\n";
+		for (int i = 0; i < 4; i++)
+			if (rhs.child[i] != nullptr)
+				out << *rhs.child[i];
+		return out;
+	}
 };
 
+template<typename scalar>
+int Node<scalar>::bucket_size = 5;
 
-
-template<typename scalar, int BUCKET_SIZE>
-Node<scalar,BUCKET_SIZE>::Node():
+template<typename scalar>
+Node<scalar>::Node(int depth):
 	child{nullptr,nullptr,nullptr,nullptr}, 
-	state(status::leaf), 
-	point_count{}, 
-	points(new std::array<Point<scalar>,BUCKET_SIZE>) 
+	state{status::leaf},
+	point_count{},
+	depth{depth}
 {
 
 }
 
 
-template<typename scalar, int BUCKET_SIZE>
-bool Node<scalar,BUCKET_SIZE>::insert(Point<scalar> point)
+template<typename scalar>
+bool Node<scalar>::insert(const Point<scalar>& point)
 {
 	if(this->state == status::leaf)
 	{
-		if(point_count != BUCKET_SIZE)
-			points[point_count++] = point;
+		if (point_count != bucket_size)
+		{
+			points.push_back(point);
+			return true;
+		}
 		else
 		{
-			this->split(point);
+			return this->split(point);
 		}
 	}
 	else
 	{
-		if(int sect = this->get_section(point); child[sect] == nullptr)
-			child[sect] = new Node<scalar,BUCKET_SIZE>;
-		this->child[this->get_section(point)]->insert(point);
+		int sect = this->get_section(point);
+		if (child[sect] == nullptr)
+		{
+			child[sect] = new Node<scalar>(this->depth + 1);
+			child[sect]->set_region(this->region, sect);
+		}
+		return child[sect]->insert(point);
 	}
 }
 
 
-template<typename scalar, int BUCKET_SIZE>
-int Node<scalar,BUCKET_SIZE>::get_section(Point<scalar> point)
+template<typename scalar>
+int Node<scalar>::get_section(const Point<scalar>& point)
 {
 	int X = (point.x >= region.center.x) << 1;
 	int Y = (point.y >= region.center.y) << 0;
 	return (X|Y);
 }
 
-template<typename scalar, int BUCKET_SIZE>
-bool Node<scalar,BUCKET_SIZE>::split(Point<scalar> point)
+template<typename scalar>
+void Node<scalar>::set_region(const Region<scalar>& parent_reg, int sect)
+{
+	this->region.half_size = parent_reg.half_size / 2;
+	switch (sect)
+	{
+	case 0:
+		this->region.center.x = parent_reg.center.x - this->region.half_size;
+		this->region.center.y = parent_reg.center.x - this->region.half_size;
+		break;
+	case 1:
+		this->region.center.x = parent_reg.center.x - this->region.half_size;
+		this->region.center.y = parent_reg.center.x + this->region.half_size;
+		break;
+	case 2:
+		this->region.center.x = parent_reg.center.x + this->region.half_size;
+		this->region.center.y = parent_reg.center.x - this->region.half_size;
+		break;
+	case 3:
+		this->region.center.x = parent_reg.center.x + this->region.half_size;
+		this->region.center.y = parent_reg.center.x + this->region.half_size;
+		break;
+	}
+
+}
+
+template<typename scalar>
+bool Node<scalar>::split(const Point<scalar>& point)
 {
 	this->state = status::parent;
-	for(auto it = points->begin(); it != points->end(); it++)
+	for (auto it : points)
 	{
-		this->insert(*it);
+		this->insert(it);
 	}
-	delete points;
+	this->insert(point);
+	points.clear();
+	points.shrink_to_fit();
+
+	return true;
 }
 
 #endif
