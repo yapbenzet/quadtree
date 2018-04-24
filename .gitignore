@@ -1,3 +1,6 @@
+
+# Created by https://www.gitignore.io/api/cmake,visualstudiocode
+
 ### CMake ###
 CMakeCache.txt
 CMakeFiles
@@ -18,4 +21,6 @@ build
 !.vscode/extensions.json
 .history
 
+
+# End of https://www.gitignore.io/api/cmake,visualstudiocode
 
