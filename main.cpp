@@ -1,3 +1,6 @@
+#include "include/point.hpp"
+#include "include/node.hpp"
+#include "include/region.hpp"
 #include "include/quad_tree.hpp"
 #include <iostream>
 #include <random>
@@ -5,15 +8,16 @@
 
 int main()
 {
-	Point<long double> center(512, 512);
+
+	Point<long double> center(0,0);
 	Region<long double> region(512,center);
-	quad_tree<long double> quadtree(region,5);
+	quad_tree<long double> quadtree(region,50);
 
 	std::mt19937_64 machine;
-	std::uniform_real_distribution<long double> distrubition(0, 1024);
+	std::uniform_real_distribution<long double> distrubition(-512, 512);
 
 	std::cout << "Allocating Space...\n";
-	std::vector<Point<long double>> points(10e3);
+	std::vector<Point<long double>> points(10e2);
 	std::cout << "Space allocated...\nGenerating random data...\n";
 	for (auto& i : points)
 	{
@@ -33,9 +37,10 @@ int main()
 	duration<long double> duration = end - begin;
 
 	std::cout << "Duration:"<< duration.count() << std::endl;
-
+	std::cin.get();
 	std::cout << quadtree;
 
 	std::cin.get();
+	return 0;
     
 }
