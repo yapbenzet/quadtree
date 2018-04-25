@@ -8,16 +8,18 @@
 
 int main()
 {
+	const int bucket_size = 5;
+	const long point_count = 1e6;
 
 	Point<long double> center(0,0);
 	Region<long double> region(512,center);
-	quad_tree<long double> quadtree(region,50);
+	quad_tree<long double> quadtree(region,bucket_size);
 
 	std::mt19937_64 machine;
 	std::uniform_real_distribution<long double> distrubition(-512, 512);
 
 	std::cout << "Allocating Space...\n";
-	std::vector<Point<long double>> points(10e2);
+	std::vector<Point<long double>> points(point_count);
 	std::cout << "Space allocated...\nGenerating random data...\n";
 	for (auto& i : points)
 	{

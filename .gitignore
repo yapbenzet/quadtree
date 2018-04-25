@@ -22,6 +22,9 @@ build
 .history
 
 .vscode
+.vs
+
+CmakeSettings.json
 
 # End of https://www.gitignore.io/api/cmake,visualstudiocode
 

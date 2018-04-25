@@ -96,7 +96,7 @@ std::ostream& operator<<(std::ostream& out, const Node<S>& rhs)
 	for (int i = 0; i < rhs.depth; i++)
 		out << "  ";
 
-	out << rhs.region << "points: 0 ";
+	out <<"depth:"<< rhs.depth <<"   "<< rhs.region << "points: 0 ";
 	if(rhs.state == status::leaf)
 		out << "    points:" << rhs.points.size() << "\n";
 	else
